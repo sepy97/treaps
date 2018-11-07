@@ -76,6 +76,25 @@ treap* merge(treap *left, treap *right)
     }
 }
 
+void unite (treap* treap_left, treap* treap_right, treap* root)
+{
+    if (!treap_left || !treap_right)
+    {
+        root = treap_left;
+        if (treap_left == NULL) root = treap_right;
+    }
+    else if (treap_left->priority > treap_right->priority)
+    {
+        unite (treap_left->right, treap_right, treap_left->right);
+        root = treap_left;
+    }
+    else
+    {
+        unite (treap_right->left, treap_left, treap_right->left);
+        root = treap_right;
+    }
+}
+
 void dumpTreap (treap* out, int spacingCounter = 0)
 {
     if (out)
@@ -94,6 +113,12 @@ int main ()
     treap t2 (9);  t2.priority = 7;
     treap t3 (14); t3.priority = 4;
     treap t4 (13); t4.priority = 8;
+    
+    treap t11(0);
+    
+    unite (&t1, &t2, &t11);
+    dump (&t11);
+    printf ("*****************************\n");
     
     t2 = *merge (&t1, &t2);
     t4 = *merge (&t3, &t4);
