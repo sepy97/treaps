@@ -11,70 +11,46 @@
 #include <utility>
 
 using namespace std;
-struct treap
+struct node
 {
-    treap *left, *right;
+    node *left, *right;
     int key, priority;
-    treap (int new_key)
-    {
-        key      = new_key;
-        priority = rand();
-        left     = right = NULL;
-    }
+    node () { }
+    node (int key, int priority) : key (key), priority (priority), left (NULL), right (NULL) { }
     
 };
+typedef node* treap;
 
-void dump (treap *out)
+pair<treap, treap> split (treap root, int key)
 {
-    if (out != NULL)
-    {
-        printf ("(%d.%d) \n", out->key, out->priority);
-        
-        dump (out->left);
-        dump (out->right);
-    }
-}
-
-treap split (treap* less, treap* gtr, treap* root, int key)
-{
-    if (root == NULL)
-    {
-        *less = *gtr = NULL;
-        return NULL;
-    }
-    
-    treap* newroot  = new treap(root->key);
-    newroot->priority = root->priority;
+    if (root == nullptr) return make_pair (nullptr, nullptr);
     
     if (root->key < key)
     {
-        *less = newroot;
-        return split (&(newroot->right), gtr, root->right, key);
-    }
-    else if (root->key > key)
-    {
-        *gtr = newroot;
-        return split (less, &(newroot->left), root->left, key);
+        pair<treap, treap> splitted = split (root->right, key);
+        root->right = splitted.first;
+        return make_pair (root, splitted.second);
     }
     else
     {
-        less = root->left;
-        gtr  = root->right;
-        return newroot;
+        pair<treap, treap> splitted = split (root->left, key);
+        root->left = splitted.second;
+        return make_pair (splitted.first, root);
     }
     
-    //return make_pair(less, gtr);
 }
 
-treap* merge(treap *left, treap *right)
+treap merge(treap left, treap right)
 {
     if (left == nullptr || right == nullptr) return right == nullptr ? left : right;
+    
     if (left->key > right->key)
     {
-        treap* tmp = right;
+        treap tmp = right;
         right = left;
         left = tmp;
     }
+    
     if (left->priority > right->priority)
     {
         left->right = merge (left->right, right);
@@ -89,51 +65,21 @@ treap* merge(treap *left, treap *right)
     }
 }
 
-void unite (treap* treap_left, treap* treap_right, treap* root)
+treap unite (treap left, treap right)
 {
-    if (!treap_left || !treap_right)
-    {
-        root = treap_left;
-        if (treap_left == NULL) root = treap_right;
-    }
-    else if (treap_left->priority > treap_right->priority)
-    {
-        unite (treap_left->right, treap_right, treap_left->right);
-        root = treap_left;
-    }
-    else
-    {
-        unite (treap_right->left, treap_left, treap_right->left);
-        root = treap_right;
-    }
+    if (!left || !right)  return left ? left : right;
+    if (left->priority < right->priority)  swap (left, right);
+    
+    treap lt, rt;
+    auto tmp = split (right, left->key);
+    lt = tmp.first; rt = tmp.second;
+    
+    left->left = unite (left->left, lt);
+    left->right = unite (left->right, rt);
+    return left;
 }
 
-treap unionTreap (treap* left, treap* right)
-{
-    treap root(0), less(0), gtr(0), duplicate(0);
-    
-    if (left  == NULL) return *right;
-    if (right == NULL) return *left;
-    
-    if (left->priority < right->priority)
-    {
-        treap* tmp = right;
-        right = left;
-        left = tmp;
-    }
-    
-    duplicate = split (&less, &gtr, right, left->key);
-    
-    
-    root = *new treap(left->key);
-    root.priority = left->priority;
-    *(root.left) = unionTreap(left->left, &less);
-    *(root.right) = unionTreap(left->right, &gtr);
-    
-    return root;
-}
-
-void dumpTreap (treap* out, int spacingCounter = 0)
+void dumpTreap (treap out, int spacingCounter = 0)
 {
     if (out)
     {
@@ -144,36 +90,25 @@ void dumpTreap (treap* out, int spacingCounter = 0)
     }
 }
 
-
 int main ()
 {
-    treap t1 (11); t1.priority = 3;
-    treap t2 (9);  t2.priority = 7;
-    treap t3 (14); t3.priority = 4;
-    treap t4 (13); t4.priority = 8;
+    treap t1 = new node (11, 3);
+    treap t2 = new node (9, 7);
+    treap t3 = new node (14, 4);
+    treap t4 = new node (13, 8);
     
-    treap t11(0);
+    t2 = unite/*merge*/ (t1, t2);
+    t4 = unite/*merge*/ (t3, t4);
+    t4 = unite/*merge*/ (t4, t2);
     
-    //unite (&t1, &t2, &t11);
-    t11 = unionTreap(&t1, &t2);
-    dump (&t11);
+    dumpTreap (t4);
     printf ("*****************************\n");
     
-    t2 = *merge (&t1, &t2);
-    t4 = *merge (&t3, &t4);
-    t4 = *merge (&t4, &t2);
+    auto t5 = split (t4, 13);
     
-    dumpTreap (&t4);
+    dumpTreap (t5.first);
     printf ("*****************************\n");
-    
-    treap t5 (0), t6 (0);
-    auto tmp = split (&t5, &t6, &t4, 13);
-    
-    dumpTreap (&t5);
-    printf ("*****************************\n");
-    dumpTreap (&t6);
+    dumpTreap (t5.second);
     printf ("*****************************\n");
     return 0;
 }
-
-
