@@ -91,9 +91,10 @@ treap unite (treap left, treap right) //множественная операц�
     auto tmp = split (right, left->key, &duplicate);
     lt = tmp.first; rt = tmp.second;
     
-    left->left  = unite (left->left, lt);
-    left->right = unite (left->right, rt);
-    return left;
+    treap root = new node (left->key, left->priority);
+    root->left = unite (left->left, lt);
+    root->right = unite (left->right, rt);
+    return root;
 }
 
 treap intersect (treap left, treap right) //множественная операция пересечения
@@ -101,9 +102,9 @@ treap intersect (treap left, treap right) //множественная опер�
     /*dumpTreap (left);
     printf ("*****************************\n");
     dumpTreap (right);
-    printf ("*****************************\n");
-    */
-    if (!left || !right)  return left ? left : right;
+    printf ("*****************************\n");*/
+    
+    if (!left || !right)  return NULL;
     if (left->priority < right->priority)  swap (left, right); //гарантируем, что высший приоритет у левого дерева
     
     treap lt, rt, duplicate, tmpleft, tmpright;
@@ -115,9 +116,44 @@ treap intersect (treap left, treap right) //множественная опер�
     
     if (duplicate)
     {
-        left->left  = tmpleft;
-        left->right = tmpright;
-        return left;
+        treap root = new node (left->key, left->priority);
+        root->left = tmpleft;
+        root->right = tmpright;
+        return root;
+    }
+    else
+    {
+        return merge (tmpleft, tmpright);
+    }
+}
+
+treap differ (treap left, treap right, bool right_is_subtr) //множественная операция разности, subtr=true когда right - это "вычитаемое"
+{
+    /*dumpTreap (left);
+    printf ("*****************************\n");
+    dumpTreap (right);
+    printf ("*****************************\n");*/
+    
+    if (!left || !right)  return right_is_subtr ? left : right;
+    if (left->priority < right->priority)
+    {
+        right_is_subtr = !right_is_subtr;
+        swap (left, right); //гарантируем, что высший приоритет у левого дерева
+    }
+    
+    treap lt, rt, duplicate, tmpleft, tmpright;
+    auto tmp = split (right, left->key, &duplicate);
+    lt = tmp.first; rt = tmp.second;
+    
+    tmpleft  = differ (left->left,  lt, right_is_subtr);
+    tmpright = differ (left->right, rt, right_is_subtr);
+    
+    if (duplicate == NULL && right_is_subtr)
+    {
+        treap root = new node (left->key, left->priority);
+        root->left = tmpleft;
+        root->right = tmpright;
+        return root;
     }
     else
     {
@@ -140,9 +176,19 @@ int main ()
     
     dumpTreap (t2);
     printf ("*****************************\n");
+    /*
+    treap un = unite (t2, t4);
+    dumpTreap (un);
+    printf ("*****************************\n");
+    printf ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
     
     treap inter = intersect (t2, t4);
     dumpTreap (inter);
+    printf ("*****************************\n");
+    */printf ("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+    
+    treap diff = differ (t2, t4, false);
+    dumpTreap (diff);
     printf ("*****************************\n");
     
     /* if (0)
