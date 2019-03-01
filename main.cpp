@@ -6,8 +6,8 @@
 //  Copyright © 2018 sepy. All rights reserved.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <utility>
 
 using namespace std;
@@ -15,8 +15,8 @@ struct node
 {
     node *left, *right;
     int key, priority;
-    node () : key (0), priority (0), left (NULL), right (NULL) { }
-    node (int key, int priority) : key (key), priority (priority), left (NULL), right (NULL) { }
+    node () : key (0), priority (0), left (nullptr), right (nullptr) { }
+    node (int key, int priority) : key (key), priority (priority), left (nullptr), right (nullptr) { }
     
 };
 typedef node* treap;
@@ -32,20 +32,21 @@ void dumpTreap (treap out, int spacingCounter = 0)
     }
 }
 
-pair<treap, treap> split (treap root, int key, treap* dupl) //операция split разделяет дерево на два по ключу, если есть совпадение со значением ключа - кидает эту вершину в dupl
+pair<treap, treap> split (treap root, int key, treap* dupl) //операция split разделяет дерево на два по ключу, если есть совпадение со значением ключа
+                                                                                                            // - кидает эту вершину в dupl
 {
     if (root == nullptr) return make_pair (nullptr, nullptr);
     
     if (root->key < key)
     {
-        (*dupl) = NULL;
+        (*dupl) = nullptr;
         pair<treap, treap> splitted = split (root->right, key, dupl);
         root->right = splitted.first;
         return make_pair (root, splitted.second);
     }
     else if (root->key > key)
     {
-        (*dupl) = NULL;
+        (*dupl) = nullptr;
         pair<treap, treap> splitted = split (root->left, key, dupl);
         root->left = splitted.second;
         return make_pair (splitted.first, root);
@@ -90,8 +91,8 @@ treap unite (treap left, treap right) //множественная операц�
     treap lt, rt, duplicate;
     auto tmp = split (right, left->key, &duplicate);
     lt = tmp.first; rt = tmp.second;
-    
-    treap root = new node (left->key, left->priority);
+	
+	auto root = new node (left->key, left->priority);
     root->left = unite (left->left, lt);
     root->right = unite (left->right, rt);
     return root;
@@ -104,7 +105,7 @@ treap intersect (treap left, treap right) //множественная опер�
     dumpTreap (right);
     printf ("*****************************\n");*/
     
-    if (!left || !right)  return NULL;
+    if (!left || !right)  return nullptr;
     if (left->priority < right->priority)  swap (left, right); //гарантируем, что высший приоритет у левого дерева
     
     treap lt, rt, duplicate, tmpleft, tmpright;
@@ -116,7 +117,7 @@ treap intersect (treap left, treap right) //множественная опер�
     
     if (duplicate)
     {
-        treap root = new node (left->key, left->priority);
+	    auto root = new node (left->key, left->priority);
         root->left = tmpleft;
         root->right = tmpright;
         return root;
@@ -148,9 +149,9 @@ treap differ (treap left, treap right, bool right_is_subtr) //множестве
     tmpleft  = differ (left->left,  lt, right_is_subtr);
     tmpright = differ (left->right, rt, right_is_subtr);
     
-    if (duplicate == NULL && right_is_subtr)
+    if (duplicate == nullptr && right_is_subtr)
     {
-        treap root = new node (left->key, left->priority);
+	    auto root = new node (left->key, left->priority);
         root->left = tmpleft;
         root->right = tmpright;
         return root;
@@ -163,10 +164,10 @@ treap differ (treap left, treap right, bool right_is_subtr) //множестве
 
 int main ()
 {
-    treap t1 = new node (13, 3);
-    treap t2 = new node (9, 7);
-    treap t3 = new node (14, 4);
-    treap t4 = new node (13, 8);
+	auto t1 = new node (13, 3);
+	auto t2 = new node (9, 7);
+	auto t3 = new node (14, 4);
+	auto t4 = new node (13, 8);
     
     t2 = merge (t1, t2);
     t4 = merge (t3, t4);
